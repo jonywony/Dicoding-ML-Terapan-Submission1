@@ -221,9 +221,11 @@ Berdasarkan kekurangan dan kelebihan yang dijabarkan, menurut saya algoritma yan
 
 ## **6. Evaluasi**
 Metriks evaluasi yang saya gunakan pada proyek kali ini adalah F1 Score. F1 Score sering disebut juga harmonic mean dari precision dan recall. F1 Score bekerja dengan cara mengalikan nilai dari precision dan recall lalu dikalikan dua dan dibagi dengan penjumlahan antara precision dan recall. Secara umum, formula untuk F1 Score adalah sebagai berikut:
+
 ![F1_Formula](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/F1_Formula.png?raw=true)
 
 Hasil yang didapatkan pada F1 Score data latih dan data uji adalah sebagai berikut:
+
 ![Hasil_F1](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/Hasil_F1.png?raw=true)
 - **Algoritma KNN**
 
