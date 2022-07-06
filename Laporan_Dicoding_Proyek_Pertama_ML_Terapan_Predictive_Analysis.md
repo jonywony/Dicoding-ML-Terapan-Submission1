@@ -23,20 +23,20 @@ Penyakit stroke adalah salah satu penyakit mematikan yang sering menjangkit manu
 
 ##### **- Referensi**
 
-Referensi dari permasalahan ini berasal dari jurnal "Prediksi Risiko Kematian Pasien Stroke Perdarahan dengan Menggunakan Teknik Klasifikasi Data Mining" oleh Indarto, Ema Utami, dan Suwanto Raharjo. Jurnal dapat diakses pada : http://www.e-journal.janabadra.ac.id/index.php/informasiinteraktif/article/view/1172/790
+Referensi dari permasalahan ini berasal dari jurnal [Prediksi Risiko Kematian Pasien Stroke Perdarahan dengan Menggunakan Teknik Klasifikasi Data Mining](http://www.e-journal.janabadra.ac.id/index.php/informasiinteraktif/article/view/1172/790) oleh Indarto, Ema Utami, dan Suwanto Raharjo.
 
 ## **2. Business Understanding**
 
 ##### **Problem Statement**
-1. Penyakit stroke adalah penyakit yang sering diderita oleh manusia namun masih jarang terdeteksi saat gejala awal sehingga dapat menyebabkan komplikasi lebih lanjut.
+1.  Bagaimana cara mendeteksi penyakit stroke lebih awal berdasarkan gejala?
 ##### **Goals**
 1. Diperlukan suatu sistem yang dapat memprediksi apakah seseorang menderita penyakit stroke berdasarkan gejala ataupun situasi yang dialami oleh penderita agar dapat dilakukan penanganan secepat mungkin.
 ##### **Solution Statement**
-1. Untuk membuat sistem prediksi kali ini, saya menggunakan 3 algoritma sebagai perbandingan yaitu Logistic Regression, KNN, dan Random Forest. Untuk menentukan algoritma yang lebih baik, saya menggunakan metriks evaluasi yaitu MSE(Mean Squared Error). Saya memilih MSE karena poin penting dari prediksi penyakit stroke adalah mengurangi kemungkinan salah diagnosis atau mengurangi False Negative dan False Positive.
+1. Untuk membuat sistem prediksi kali ini, saya menggunakan 3 algoritma sebagai perbandingan yaitu Logistic Regression, KNN, dan Random Forest. Untuk menentukan algoritma yang lebih baik, saya menggunakan metriks evaluasi yaitu F1 Score. Saya memilih F1 Score karena dataset yang dimiliki memiliki jumlah kelas yang imabalanced atau tidak seimbang dan F1 Score menggunakan semua matriks prediksi sehingga hasil yang didapatkan lebih dapat dipercaya.
 
 ## **3. Data Understanding**
 #### **3.1. Loading Data**
-Dari dataset yang saya ambil dari Kaggle dengan judul "Stroke Prediction Dataset" (https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset) dapat dilihat bahwa terdapat 5110 data dan 12 kolom yang diguanakan yaitu:
+Dari dataset yang saya ambil dari Kaggle dengan judul [Stroke Prediction Dataset](https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset) dapat dilihat bahwa terdapat 5110 data dan 12 kolom yang diguanakan yaitu:
 1. **id**: merupakan identifikasi unik untuk setiap pasien (numerik)
 2. **gender**: merupakan data jenis kelamin pasien apakah laki-laki('Male'), perempuan('Female'), atau lainnya ('Other') (kategorik)
 3. **age**: umur dari pasien (numerik)
@@ -66,62 +66,57 @@ Eksplorasi variabel data menggunakan fungsi **info()** dari dataframe akan menge
 10. **smoking_status**:memiliki tipe data object
 11. **stroke**: memiliki tipe data int
 
-Pada bagian Loading Data dijelaskan bahwa atribut hypertension, heart_disease, dan stroke adalah data kategorik namun pada dataframe memiliki nilai int. Oleh karena itu, pertama-tama kita akan mengubah tipe data ketiganya menjadi object dengan menggunakan fungsi **astype(dtype='object')**. Hasil dari transformasi ini adalah:
-1. **gender**: memiliki tipe data object
-2. **age**: memiliki tipe data float
-3. **hypertension**: memiliki tipe data **object**
-4. **heart_disease**: memiliki tipe data **object**
-5. **ever_married**: memiliki tipe data object
-6. **work_type**: memiliki tipe data object
-7. **Residence_type**: memiliki tipe data object
-8. **avg_glucose_level**: memiliki tipe data float
-9. **bmi**: memiliki tipe data int
-10. **smoking_status**:memiliki tipe data object
-11. **stroke**: memiliki tipe data **object**
-
 ***note**: dari sini juga dapat dilihat bahwa atribut bmi memiliki missing value, hal ini akan ditangani pada proses selanjutnya
 
-#### **3.3. EDA-Menangani Missing Value dan Outliers**
-##### **- Penanganan Missing Value**
-Untuk menangani Missing Value, sebelumnya kita akan mengidentifikasi apakah ada missing value pada data menggunakan fungsi **isna().sum().sort_values(ascending=False)**. Dapat dilihat bahwa terdapat 201 missing value pada atribut bmi. Setelah itu, saya menggunakan fungsi **fillna()** dengan value median dari bmi. Saya memutuskan untuk mengisi data yang kosong tersebut dengan mengunakan median Karena memiliki jumlah yang sangat banyak dan untuk mempertahankan distribusi data.
-
-##### **- Penanganan Outlier**
-[![Box_Age](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_age.png?raw=true)
-[![Box_BMI](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_bmi.png?raw=true)
-[![Box_Avg_glucose_level](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_avg_glucose_level.png?raw=true)
-Dengan menggunakan boxplot pada data numerik ('bmi', 'avg_glucose_level', dan 'age') dapat dilihat bahwa pada atribut **bmi** dan **avg_glucose_level** memiliki outlier yang ditandai dengan titik-titik hitam diluar boxplot. Untuk menanganinya, saya menggunakan IQR(Inter Quartile Range) sebagai parameter untuk menghapus outlier, jika ada data yang nilainya kurang dari Q1-1.5XIQR atau data yang nilainya lebih dari Q3+1.5XIQR maka data tersebut akan dianggap outlier dan dihilangkan.
-Setelah melalui dua proses tersebut data yang telah dibersihkan menjadi 4391 data.
-
-#### **3.4. EDA-Univariate Analysis**
+#### **3.3. EDA-Univariate Analysis**
 ##### **-Data Kategorik**
 Pada data kategorik yang terdiri dari atribut ('gender', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status', 'stroke') akan dilakukan univariate analysis dengan mengetaui sebarannya. Didapatkan hasil sebagai berikut:
-[![Box_gender](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_gender.png?raw=true)
+
+![Box_gender](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_gender.png?raw=true)
+
 1. **gender**: memiliki sebaran yang hampir merata antara kategori "Male" dan "Female". Kategori "Other" akan dihilangkan karena hanya memiliki 1 data saja.
-[![Box_hypertension](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_hypertension.png?raw=true)
+
+![Box_hypertension](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_hypertension.png?raw=true)
+
 2. **hypertension**: memiliki sebaran yang tidak merata antara pasien yang memiliki hipertensi(1) dengan yang tidak(0). Pasien yang tidak memiliki hipertensi jauh lebih banyak.
-[![Box_HD](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_heart_disease.png?raw=true)
+
+![Box_HD](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_heart_disease.png?raw=true)
+
 3. **heart_disease**: memiliki sebaran yang tidak merata antara pasien yang memiliki penyakit jantung(1) dengan yang tidak(0). Pasien yang tidak memiliki penyakit jantung jauh lebih banyak.
-[![Box_EM](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_ever_married.png?raw=true)
+
+![Box_EM](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_ever_married.png?raw=true)
+
 4. **ever_married**: memiliki sebaran yang hampir merata antara kategori "Yes" dan "No".
-[![Box_WT](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_work_type.png?raw=true)
+
+![Box_WT](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_work_type.png?raw=true)
+
 5. **work_type**: memiliki sebaran yang tidak rata antara setiap data kategorik dimana kebanyakan data ada pada satu kategori yaitu "private" sementara kategori "never_worked" sangat sedikit.
-[![Box_RT](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_Residence_type.png?raw=true)
+
+![Box_RT](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_Residence_type.png?raw=true)
+
 6. **Residence_type**: memiliki sebaran yang hampir merata antara kategori "Urban" dan "Rural".
-[![Box_Smoking-Status](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_smoking_status.png?raw=true)
+
+![Box_Smoking-Status](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_smoking-status.png?raw=true)
+
 7. **smoking_status**:memiliki sebaran yang hampir merata antara setiap kategori.
-[![Box_stroke](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_stroke.png?raw=true)
+
+![Box_stroke](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_stroke.png?raw=true)
+
 8. **stroke**: memiliki sebaran yang tidak merata dimana kebanyakan data adalah pasien yang tidak mengalami stroke(0).
 
 ##### **- Data Numerik**
-[![Box_NUM](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_numerik.png?raw=true)
+
+![Box_NUM](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_numerik.png?raw=true)
+
 1. **age**: memiliki sebaran data yang random dimana hampir semua distribusi memiliki nilai yang hampir sama.
 2. **avg_glucose_level**: memiliki sebaran yang condong/skewed ke kiri.
 3. **bmi**: memiliki sebaran yang mendekati normal.
 
-#### **3.5. EDA-Multivariate Analysis**
+#### **3.4. EDA-Multivariate Analysis**
 Multi Variate Analysis digunakan untuk mengetahui hubungan antara 2 atribut atau lebih.
 ##### **- Fitur Kategorik**
-[![Box_CorrKategorik](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/corr_kategorik.png?raw=true)
+
+![Box_CorrKategorik](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/corr_kategorik.png?raw=true)
 Saya akan mengecek rata-rata terkena penyakit stroke terhadap masing-masing fitur kategorik. Didapatkan hasil sebagai berikut:
 1. **gender**: Pada atribut gender, rata-rata nilai pada kategori "Male' dan "Female" hampir mirip pada rentang 0.3-0.4.
 2. **hypertension**: Pada atribut hypertension, apabila memiliki hipertensi(1) maka akan semakin tinggi rata-rata.
@@ -132,21 +127,31 @@ Saya akan mengecek rata-rata terkena penyakit stroke terhadap masing-masing fitu
 7. **smoking_status**: Pada atribut gender, rata-rata nilai pada setiap kategori hampir sama. Apabila memiliki kategori "formerly_smoked" maka rata-rata akan semakin tinggi.
 
 ##### **- Fitur Numerik**
-[![Box_KorrNum](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/matriks_korelasi_numerik.png?raw=true)
+![Box_KorrNum](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/matriks_korelasi_numerik.png?raw=true)
 Pada data numerik, akan dihitung korelasi antara setiap bagian fitur. Didapatkan hasil:
 1. Atribut age dan bmi memiliki korelas yang bagus sehingga nilai tersebut akan tetap dipertahankan.
-2. Atribut avg_glucose_level memiliki corelasi yang buruk yaitu -0.02, karena itu atribut avg_glucose_level akan dihapus.
+2. Atribut avg_glucose_level memiliki korelasi yang buruk yaitu -0.02, karena itu atribut avg_glucose_level akan dihapus.
  
 ## **4. Data Preparation**
-#### **- Encoding Fitur Kategorik**
-- Proses
 
-Pada dataset kali ini, akan dilakukan proses encoding data kategorik menjadi numerik yaitu one-hot encoding. One-hot encoding adalah proses merepresentasikan data kategorik sebagai vektor biner yang bernilai integer 0 atau 1. 
-Apabila data kategorik adalah biner(terdiri dari 2 kategori) maka atribut akan tetap dan salah satu kategori merepresentasikan nilai 1 dan kategori lainnya merepresentasikan nilai 0. Dalam dataset ini, atribut yang memiliki kategori biner adalah atribut **gender, ever_married, Residence_type, hypertension, heart_disease, dan stroke**
-Apabila data kategorik memiliki lebih dari 2 kategori, maka akan dibuat kolom baru sesuai dengan banyaknya kategori yang ada. pada atribut tersebut nilai 1 merepresentasikan bahwa data termasuk kategori tersebut sementara nilai 0 merepresentasikan bahwa data bukanlah termasuk kategori tersebut. Dala dataset ini, atribut yang memiliki kategori lebih dari 2 adalah **work_type dan smoking_status**
+##### **- Penanganan Outlier**
+- Proses
+Dengan menggunakan boxplot pada data numerik ('bmi' dan 'age') dapat dilihat bahwa pada atribut **bmi** dan **age** memiliki outlier yang ditandai dengan titik-titik hitam diluar boxplot. Untuk menanganinya, saya menggunakan IQR(Inter Quartile Range) sebagai parameter untuk menghapus outlier, jika ada data yang nilainya kurang dari Q1-1.5XIQR atau data yang nilainya lebih dari Q3+1.5XIQR maka data tersebut akan dianggap outlier dan dihilangkan. Setelah melalui dua proses tersebut data yang telah dibersihkan menjadi 5109 data.
+
+![Box_Age](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_age.png?raw=true)
+![Box_BMI](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/dist_bmi.png?raw=true)
+
 - Alasan Penggunaan
 
-Alasan penggunaan one-hot encoding adalah untuk mengubah data kategorik menjadi data numerik namun masih tetap merepresentasikan data kategorik tersebut. Hal ini dilakukan karena akan membantu model untuk memahami data menjadi lebih baik dimana mesin hanya mengerti angka dan bukan teks/huruf. Selain itu, one-hot encoding akan memudahkan penentuan probabilitas untuk setiap value.
+Outlier perlu ditangani karena dapat memengaruhi distribusi data dan dapat mengurangi tingkat kepercayaan dari model klasifikasi yang dibuat.
+
+#### **- Labelling Fitur Kategorik**
+- Proses
+
+Pada dataset kali ini, akan dilakukan proses labelling data kategorik yang akan mengubah tipe data dari int menjadi object dengan rincian pada atribut **gender** untuk nilai 'male' diubah menjadi 1 dan nilai 'female' diubah menjadi 0. Untuk atribut ** ever_married** nilai 'Yes' diubah menjadi 1 dan nilai 'No' diubah menjadi 0. Untuk atribut **work_type** nilai 'Govt_job' diubah menjadi 0, nilai 'Private' diubah menjadi 1, 'Self-employed' diubah menjadi 2, 'children' diubag menjadi 3, dan 'Never_worked' diubah menjadi 4. Untuk atribut **Residence-type** nilai 'Urban' diubah menjadi 1 dan nilai 'Rural' diubah menjadi 0. Untuk atribut **smoking-status** nilai 'unknown' diubah menjadi 0, nilai 'formerly smoked' diubah menjadi 1, 'never smoked' diubah menjadi 2, dan nilai 'smokes' diubah menjadi 3. Untuk atribut **hypertension** nilai '1' diubah menjadi 1, nilai '0' diubah menjadi 0. Untuk atribut **heart_disease** nilai '1' diubah menjadi 1, nilai '0' diubah menjadi 0. Untuk atribut **stroke** nilai '1' diubah menjadi 1, nilai '0' diubah menjadi 0.
+- Alasan Penggunaan
+
+Alasan penggunaan labelling adalah untuk mengubah data kategorik menjadi data numerik namun masih tetap merepresentasikan data kategorik tersebut. Hal ini dilakukan karena akan membantu model untuk memahami data menjadi lebih baik dimana mesin hanya mengerti angka dan bukan teks/huruf.
 
 #### **- Membagi Data Train dan Test**
 - Proses
@@ -212,32 +217,32 @@ Pada implementasi Logistic Regression saya menggunakan fungsi **LogisticRegressi
 2. Hanya dapat digunakan untuk memprediksi data yang bersifat diskrit dan memiliki permasalahan dalam menganalisa data yang kontinu.
 
 ##### **Algoritma Terbaik**
-Berdasarkan kekurangan dan kelebihan yang dijabarkan, menurut saya algoritma yang mungkin bekerja dengan sangat baik pada data kali ini adalah algoritma KNN. Hal ini disebabkan karena dataset yang memiliki dimensionality rendah, jumlah data yang cenderung kecil, dan telah dilakukan proses untuk menangani missing value serta outlier. Selain itu, dilihat dari metriks MSE pada data latih dan data uji KNN adalah model yang menunjukan error yang kecil pada keduanya dan tidak terindikasi overfitting.
+Berdasarkan kekurangan dan kelebihan yang dijabarkan, menurut saya algoritma yang mungkin bekerja dengan sangat baik pada data kali ini adalah algoritma Logistic Regression. Hal ini disebabkan karena dilihat dari metriks F1 Score pada data latih dan data uji Logistic Regression adalah model yang menunjukan hasil yang baik pada keduanya dan tidak terindikasi overfitting.
 
 ## **6. Evaluasi**
-Metriks evaluasi yang saya gunakan pada proyek kali ini adalah MSE (Mean Squared Error). Sesuai dengan konteks data, problem statement, dan solusi yang diinginkan yaitu lebih menekankan untuk mengurangi kesalahan prediksi(error). MSE bekerja dengan cara mengurangi nilai aktual dengan nilai prediksi dan hasilnya dikuadratkan kemudian dijumlahkan secara keseluruhan dan membaginya dengan banyaknya data yang ada. Secara umum, formula untuk MSE adalah sebagai berikut:
-[![MSE_Formula](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/MSE_Formula.png?raw=true)
+Metriks evaluasi yang saya gunakan pada proyek kali ini adalah F1 Score. F1 Score sering disebut juga harmonic mean dari precision dan recall. F1 Score bekerja dengan cara mengalikan nilai dari precision dan recall lalu dikalikan dua dan dibagi dengan penjumlahan antara precision dan recall. Secara umum, formula untuk F1 Score adalah sebagai berikut:
+![F1_Formula](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/F1_Formula.png?raw=true)
 
-Hasil yang didapatkan pada MSE data latih dan data uji adalah sebagai berikut:
-[![Box_MSE](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/Result_MSE.png?raw=true)
+Hasil yang didapatkan pada F1 Score data latih dan data uji adalah sebagai berikut:
+![Hasil_F1](https://github.com/jonywony/Dicoding-ML-Terapan-Submission1/blob/main/Gambar/Hasil_F1.png?raw=true)
 - **Algoritma KNN**
 
-##### **- MSE Data latih:** 0.000031
-##### **- MSE Data uji:** 0.000032
+##### **- F1 Data latih:** 0.951064
+##### **- F1 Data uji:** 0.951076
 ##### **- Analisis Hasil:** 
-Dapat dilihat bahwa MSE yang didapatkan sangat kecil pada kedua data latih dan data uji, selain itu tidak terindikasi adanya overfitting pada data latih.
+Dapat dilihat bahwa score yang didapatkan mendekati 1.0 yang berarti model berjalan dengan sangat baik dan tidak ada indikasi overfitting karena perbedaan score antara data latih dan data uji sedikit.
 
 - **Algoritma Random Forest**
-##### **- MSE Data latih:** 0.000006
-##### **- MSE Data uji:** 0.000035
+##### **- F1 Data latih:** 0.997798
+##### **- F1 Data uji:** 0.945205
 ##### **- Analisis Hasil:**
-Dapat dilihat bahwa MSE yang didapatkan sangat kecil pada kedua data latih dan data uji, namun terdapat kemungkinan adanya overfitting pada data latih karena MSE pada data latih jauh lebih kecil dibandingkan MSE pada data uji.
+Dapat dilihat bahwa score yang didapatkan mendekati 1.0 yang berarti model berjalan dengan sangat baik namun terindikasi overfitting karena perbedaan score antara data latih dan data uji yang agak besar.
 
 - **Algoritma Logistic Regression**
-##### **- MSE Data latih:** 0.000039
-##### **- MSE Data uji:** 0.000033
+##### **- F1 Data latih:** 0.951309
+##### **- F1 Data uji:** 0.951076
 ##### **- Analisis Hasil:**
-Dapat dilihat bahwa MSE yang didapatkan sangat kecil pada kedua data latih dan data uji, namun terdapat kemungkinan adanya overfitting pada data latih karena MSE pada data latih sedikit lebih kecil dibandingkan MSE pada data uji.
+Dapat dilihat bahwa score yang didapatkan mendekati 1.0 yang berarti model berjalan dengan sangat baik dan tidak ada indikasi overfitting karena perbedaan score antara data latih dan data uji sedikit.
 
 ##### **Kesimpulan:** 
-Pada saat percobaan prediksi pada dataset, terlihat bahwa ketiganya sama-sama menunjukan hasil yang benar. Namun berdasarkan evaluasi mertriks MSE, didapatkan hasil bahwa algoritma terbaik pada model kali ini adalah KNN.
+Pada saat percobaan prediksi pada dataset, terlihat bahwa ketiganya sama-sama menunjukan hasil yang baik. Namun berdasarkan evaluasi mertriks F1 Score, didapatkan hasil bahwa algoritma terbaik pada model kali ini adalah logistic Regression.
